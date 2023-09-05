@@ -5,3 +5,6 @@ std: 11.53624126282662
 gaussian fit 1: 0.9997*gaussian(2047.9781098888318,11.53624126282662)
 gaussian fit 2: 0.0003*gaussian(2055.476666709669,43.837716798741155)
 outliers (+-10*std): 0.000003552
+
+weird observation:
+some pixel values are a lot less likely to occur than their direct neighbors (as seen in histogram2)
