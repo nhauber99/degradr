@@ -1,0 +1,12 @@
+col std: 0.086292941303965
+row std: 0.14120292374081678
+mean: 2048.12180723833
+std: 4.961259589113805
+std of pixel std: 0.9416205390667941
+gaussian fit 1: 0.79965*gaussian(2047.129555320507,3.4728817123796634)
+gaussian fit 2: 0.2*gaussian(2050.602437032887,7.441889383670707)
+gaussian fit 3: 0.00035*gaussian(2058.0443264165574,44.65133630202425)
+amount of pixels outside +-10*std: 0.0001234738042086292
+
+weird observation:
+red and blue pixels are about 16% noisier than the green ones
