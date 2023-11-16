@@ -9,3 +9,11 @@ def histogram_plot(histogram: np.array, log_y: bool):
         plt.semilogy(histogram)
     else:
         plt.plot(histogram)
+
+
+def image_plot(image: np.array):
+    plt.imshow(image)
+
+
+def show():
+    plt.show()

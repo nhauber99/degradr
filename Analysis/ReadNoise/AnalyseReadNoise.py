@@ -9,10 +9,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from Analysis import Plotter
-from Operations import Noise
-from Utilities import FileIO, Convolve
-from Utilities.TorchUtil import np_to_torch
+from Operations import Noise, Convolve
+from Analysis.Utilities import FileIO, Plotter
+from Analysis.Utilities.TorchUtil import np_to_torch
 
 max_count = -1  # set to some number > 0 for faster debugging
 bit_depth = 14
@@ -53,8 +52,8 @@ def analyse_read_noise(path: str):
             image = FileIO.read_image(os.path.join(raw_dir, image_name), convert_to_float=False)
             image_tensor = np_to_torch(image).cuda()
             image_tensor -= Convolve.apply_kernel(image_tensor.unsqueeze(0), lowpass_kernel).squeeze(0)
-            col_std += float(image_tensor.mean(dim=1).std())
-            row_std += float(image_tensor.mean(dim=2).std())
+            col_std += float(image_tensor.mean(dim=2).std())
+            row_std += float(image_tensor.mean(dim=1).std())
             std_image += (image - mean_image) ** 2
             count += 1
             if 0 < max_count <= count:
@@ -70,8 +69,8 @@ def analyse_read_noise(path: str):
         col_std = np.sqrt(col_std ** 2 - theoretical_col_std ** 2)
         row_std = np.sqrt(row_std ** 2 - theoretical_row_std ** 2)
 
-        print(f"col std: {col_std}")
         print(f"row std: {row_std}")
+        print(f"col std: {col_std}")
 
         FileIO.write_image(mean_image_path, mean_image / (2 ** 16), np.float32)
         FileIO.write_image(std_image_path, std_image / (2 ** 16), np.float32)

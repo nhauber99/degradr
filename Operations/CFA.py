@@ -12,7 +12,7 @@ def create_bayer_matrix(shape: typing.Tuple, device: str = "cuda"):
     return bayer_tensor
 
 
-def demosaic_bilinear(image: torch.Tensor, factor: float = 1):
+def demosaic_bilinear_(image: torch.Tensor, factor: float = 1):
     r_tl = image[0, ::2, ::2]
     r_tr = torch.nn.functional.pad(image[0, ::2, 2::2].unsqueeze(0), (0, 1, 0, 0), 'replicate').squeeze(0)
     r_bl = torch.nn.functional.pad(image[0, 2::2, ::2].unsqueeze(0), (0, 0, 0, 1), 'replicate').squeeze(0)
