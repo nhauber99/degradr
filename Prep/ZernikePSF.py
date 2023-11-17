@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import prysm
 import prysm.polynomials
@@ -5,7 +7,7 @@ import prysm.propagation
 import prysm.coordinates
 import prysm.geometry
 
-from Analysis.Utilities import Plotter
+from Analysis.Utilities import Plotter, FileIO
 
 
 class Aperture:
@@ -48,6 +50,9 @@ def gen_zernike_kernel(focal_length, aperture: Aperture, total_weight: float = N
 
 if __name__ == "__main__":
     a = Aperture(50 / 2.8)
-    k = gen_zernike_kernel(100, a, 3)
-    Plotter.image_plot(k)
-    Plotter.show()
+    for i in range(1000):
+        k = gen_zernike_kernel(100, a, random.uniform(1, 2))
+        k /= np.max(k)
+        FileIO.write_image(f"Kernels/{i}.tif", k**0.45, np.uint16)
+    # Plotter.image_plot(k)
+    # Plotter.show()
