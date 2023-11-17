@@ -1,4 +1,6 @@
 import ctypes
+import time
+from enum import Enum
 
 import numpy as np
 import torch
@@ -8,17 +10,12 @@ from Analysis.Utilities import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
 from Data.ColorTransform import random_color_transform, random_cam_white_balance
 from Operations import Noise
-from Operations.CFA import demosaic_bilinear_
+from Operations.CFA import bayer_filter, BayerPattern, demosaic, DemosaicMethod
 from Operations.ColorConvert import sensor_to_srgb_matrix, apply_color_matrix, apply_white_balance
 from Operations.Convolve import gaussian_kernel, apply_kernel, circular_kernel
 
 
-def demosaic(tensor: torch.Tensor):
-    PyIPP.DemosaicIPP(ctypes.c_void_p(tensor.contiguous().data_ptr()).value, tensor.shape, tensor.dtype)
-
-
 if __name__ == "__main__":
-    PyIPP.fast_tanh(5)
     bit_depth = 14
     pedestal = 0
     images = 1
@@ -35,7 +32,7 @@ if __name__ == "__main__":
     wb = torch.tensor(random_cam_white_balance())
 
     # reading
-    clean = np_to_torch(FileIO.read_image('in0.tif')) ** 2.2 * (2 ** bit_depth) / gain
+    clean = np_to_torch(FileIO.read_image('Test/in0.tif')) ** 2.2 * (2 ** bit_depth) / gain
     clean = apply_color_matrix(clean, rgb2cam)
     clean = apply_white_balance(clean, 1. / wb)
 
@@ -48,13 +45,23 @@ if __name__ == "__main__":
     row_noise_tensor = Noise.row_noise_like(clean, row_noise)
     col_noise_tensor = Noise.col_noise_like(clean, col_noise)
 
-    noisy = (clean + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor) #scale read noise?
-    noisy = demosaic_bilinear_(noisy, 1)
-
+    noisy = (clean + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor)  # scale read noise?
     noisy = apply_white_balance(noisy, wb)
+    noisy_ahd = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.AHD)
+    noisy_vng = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.VNG)
+    noisy_leg = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.Legacy)
+
     noisy = apply_color_matrix(noisy, cam2rgb)
+    noisy_ahd = apply_color_matrix(noisy_ahd, cam2rgb)
+    noisy_vng = apply_color_matrix(noisy_vng, cam2rgb)
+    noisy_leg = apply_color_matrix(noisy_leg, cam2rgb)
 
     # writing
-    noisy *= 1 / (2 ** bit_depth)
-    noisy = noisy.clip_(0)
-    FileIO.write_image_tensor('noise.tif', noisy ** 0.4545, np.uint16)
+    noisy = (noisy / (2 ** bit_depth)).clip_(0)
+    noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0)
+    noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0)
+    noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0)
+    FileIO.write_image_tensor('Test/noise.tif', noisy ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_ahd.tif', noisy_ahd ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_vng.tif', noisy_vng ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_leg.tif', noisy_leg ** 0.4545, np.uint16)

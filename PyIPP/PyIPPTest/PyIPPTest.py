@@ -17,7 +17,7 @@ def demosaic(tensor: torch.Tensor) -> torch.Tensor:
 
 if __name__ == "__main__":
     PyIPP.fast_tanh(1.5)
-    tensor = torch.randn((3, 256, 256)).clip_(0, 1) * (2**16 - 1)
+    tensor = torch.randn((3, 386, 386)).clip_(0, 1) * (2**16 - 1)
     demosaic(tensor)
 
     print("hi")
