@@ -38,30 +38,36 @@ if __name__ == "__main__":
     clean = apply_white_balance(clean, 1. / wb)
 
     # degradation
+    blurry = clean
     for aberration_kernel in aberration_kernels:
-        clean = apply_kernel(clean, aberration_kernel)
+        blurry = apply_kernel(blurry, aberration_kernel)
 
-    clean = torch.poisson(clean) * gain
-    noise_tensor = Noise.gaussian_sample_combination_like(clean, read_noise)
-    row_noise_tensor = Noise.row_noise_like(clean, row_noise)
-    col_noise_tensor = Noise.col_noise_like(clean, col_noise)
+    noisy = torch.poisson(blurry) * gain
+    blurry *= gain
+    noise_tensor = Noise.gaussian_sample_combination_like(noisy, read_noise)
+    row_noise_tensor = Noise.row_noise_like(noisy, row_noise)
+    col_noise_tensor = Noise.col_noise_like(noisy, col_noise)
 
-    noisy = (clean + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor)  # scale read noise?
+    noisy = (noisy + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor)  # scale read noise?
+    blurry = apply_white_balance(blurry, wb)
     noisy = apply_white_balance(noisy, wb)
     noisy_ahd = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.AHD)
     noisy_vng = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.VNG)
     noisy_leg = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.Legacy)
 
     noisy = apply_color_matrix(noisy, cam2rgb)
+    blurry = apply_color_matrix(blurry, cam2rgb)
     noisy_ahd = apply_color_matrix(noisy_ahd, cam2rgb)
     noisy_vng = apply_color_matrix(noisy_vng, cam2rgb)
     noisy_leg = apply_color_matrix(noisy_leg, cam2rgb)
 
     # writing
+    blurry = (blurry / (2 ** bit_depth)).clip_(0)
     noisy = (noisy / (2 ** bit_depth)).clip_(0)
     noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0)
     noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0)
     noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0)
+    FileIO.write_image_tensor('Test/blur.png', blurry ** 0.4545, np.uint16)
     FileIO.write_image_tensor('Test/noise_blur.png', noisy ** 0.4545, np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_ahd.png', noisy_ahd ** 0.4545, np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_vng.png', noisy_vng ** 0.4545, np.uint16)
