@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
     # reading
     clean = np_to_torch(FileIO.read_image('Test/in0.tif')) ** 2.2 * (2 ** bit_depth) / gain
+    FileIO.write_image_tensor('Test/in.png', np_to_torch(FileIO.read_image('Test/in0.tif')), np.uint16)
     clean = apply_color_matrix(clean, rgb2cam)
     clean = apply_white_balance(clean, 1. / wb)
 
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0)
     noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0)
     noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0)
-    FileIO.write_image_tensor('Test/noise.tif', noisy ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_ahd.tif', noisy_ahd ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_vng.tif', noisy_vng ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_leg.tif', noisy_leg ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur.png', noisy ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_ahd.png', noisy_ahd ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_vng.png', noisy_vng ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_legacy.png', noisy_leg ** 0.4545, np.uint16)
