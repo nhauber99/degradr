@@ -2,6 +2,20 @@
 Python library for realistically degrading images.
 Work in progress, I will add more documentation when having something to show for.
 
-| Input | Blur | Blur + Noise | Blur + Noise + CFA |
+The applied steps are as follows (assuming the image is already in the camera color space):
+<ol>
+<li>Convolve by random blur kernel (a combination of defocus blur, gaussian blur, PSFs generated from Zernike polynomials to model the lens abberations, chromatic abberation)</li>
+<li>Color filter array (in practice applied directly before the demosaicing for simplicity, but this doesn't affect the output)</li>
+<li>Poison noise</li>
+<li>Gain</li>
+<li>Read Noise</li>
+<li>Quantization</li>
+<li>Camera white balance</li>
+<li>Demosaicing</li>
+<li>Color space transformation (from white balance corrected camera color space to sRGB)</li>
+</ol>
+
+**Examples (ideally download and zoom in)**
+| Input | Blur | Blur + Noise | Blur + Noise + AHD Demosaicing |
 |-------|------|--------------|--------------------|
 | ![Image](Examples/in.png) | ![Image](Examples/blur.png) | ![Image](Examples/noise_blur.png) | ![Image](Examples/noise_blur_ahd.png) |
