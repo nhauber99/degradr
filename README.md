@@ -14,6 +14,7 @@ Work in progress, I will add more documentation when having something to show fo
 <li>Camera white balance</li>
 <li>Demosaicing</li>
 <li>Color space transformation (from white balance corrected camera color space to sRGB)</li>
+<li>JPEG Compression</li>
 </ol>
 <br><br>
 
