@@ -1,19 +1,14 @@
-import ctypes
-import time
-from enum import Enum
-
 import numpy as np
 import torch
-import PyIPP
 
 from Analysis.Utilities import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
-from Data.ColorTransform import random_color_transform, random_cam_white_balance
-from Operations import Noise
-from Operations.CFA import bayer_filter, BayerPattern, demosaic, DemosaicMethod
-from Operations.ColorConvert import sensor_to_srgb_matrix, apply_color_matrix, apply_white_balance
-from Operations.Convolve import gaussian_kernel, apply_kernel, circular_kernel
-
+from ColorTransform import random_color_transform, random_cam_white_balance
+import Noise
+from CFA import BayerPattern, demosaic, DemosaicMethod
+from ColorConvert import apply_color_matrix, apply_white_balance
+from Convolve import gaussian_kernel, apply_kernel, circular_kernel
+from JpgDegrade import jpg_degrade
 
 if __name__ == "__main__":
     bit_depth = 14
@@ -43,13 +38,12 @@ if __name__ == "__main__":
         blurry = apply_kernel(blurry, aberration_kernel)
 
     noisy = torch.poisson(blurry) * gain
-    blurry *= gain
     noise_tensor = Noise.gaussian_sample_combination_like(noisy, read_noise)
     row_noise_tensor = Noise.row_noise_like(noisy, row_noise)
     col_noise_tensor = Noise.col_noise_like(noisy, col_noise)
 
-    noisy = (noisy + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor)  # scale read noise?
-    blurry = apply_white_balance(blurry, wb)
+    noisy = torch.round(noisy + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor)  # scale read noise?
+    blurry = apply_white_balance(blurry * gain, wb)
     noisy = apply_white_balance(noisy, wb)
     noisy_ahd = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.AHD)
     noisy_vng = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.VNG)
@@ -64,11 +58,13 @@ if __name__ == "__main__":
     # writing
     blurry = (blurry / (2 ** bit_depth)).clip_(0)
     noisy = (noisy / (2 ** bit_depth)).clip_(0)
-    noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0)
-    noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0)
-    noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0)
+    noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0, 1)
+    noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0, 1)
+    noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0, 1)
+    noisy_ahd_jpg = jpg_degrade(noisy_ahd, 50)
     FileIO.write_image_tensor('Test/blur.png', blurry ** 0.4545, np.uint16)
     FileIO.write_image_tensor('Test/noise_blur.png', noisy ** 0.4545, np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_ahd.png', noisy_ahd ** 0.4545, np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_vng.png', noisy_vng ** 0.4545, np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_legacy.png', noisy_leg ** 0.4545, np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_ahd_jpg.png', noisy_ahd_jpg ** 0.4545, np.uint16)

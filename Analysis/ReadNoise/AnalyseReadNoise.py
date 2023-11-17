@@ -9,7 +9,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from Operations import Noise, Convolve
+import Convolve
+import Noise
 from Analysis.Utilities import FileIO, Plotter
 from Analysis.Utilities.TorchUtil import np_to_torch
 
