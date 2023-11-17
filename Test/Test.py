@@ -1,5 +1,8 @@
+import ctypes
+
 import numpy as np
 import torch
+import PyIPP
 
 from Analysis.Utilities import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
@@ -9,7 +12,13 @@ from Operations.CFA import demosaic_bilinear_
 from Operations.ColorConvert import sensor_to_srgb_matrix, apply_color_matrix, apply_white_balance
 from Operations.Convolve import gaussian_kernel, apply_kernel, circular_kernel
 
+
+def demosaic(tensor: torch.Tensor):
+    PyIPP.DemosaicIPP(ctypes.c_void_p(tensor.contiguous().data_ptr()).value, tensor.shape, tensor.dtype)
+
+
 if __name__ == "__main__":
+    PyIPP.fast_tanh(5)
     bit_depth = 14
     pedestal = 0
     images = 1
@@ -28,7 +37,7 @@ if __name__ == "__main__":
     # reading
     clean = np_to_torch(FileIO.read_image('in0.tif')) ** 2.2 * (2 ** bit_depth) / gain
     clean = apply_color_matrix(clean, rgb2cam)
-    clean = apply_white_balance(clean, 1./wb)
+    clean = apply_white_balance(clean, 1. / wb)
 
     # degradation
     for aberration_kernel in aberration_kernels:
@@ -39,7 +48,7 @@ if __name__ == "__main__":
     row_noise_tensor = Noise.row_noise_like(clean, row_noise)
     col_noise_tensor = Noise.col_noise_like(clean, col_noise)
 
-    noisy = (clean + pedestal + noise_tensor * np.sqrt(gain) + row_noise_tensor + col_noise_tensor)
+    noisy = (clean + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor) #scale read noise?
     noisy = demosaic_bilinear_(noisy, 1)
 
     noisy = apply_white_balance(noisy, wb)

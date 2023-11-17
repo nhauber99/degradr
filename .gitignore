@@ -162,3 +162,8 @@ cython_debug/
 *.tif
 *.CR2
 *.CR3
+
+.vs
+packages
+x64
+/PyIPP/PyIPP/*.user
