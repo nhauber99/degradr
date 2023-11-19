@@ -14,7 +14,7 @@ if __name__ == "__main__":
     bit_depth = 14
     pedestal = 0
     images = 1
-    gain = 16
+    gain = 32
     read_noise = (Noise.GaussianParams(2047.98 - 2048, 11.536 / np.sqrt(images), 0.9997),
                   Noise.GaussianParams(2055.5 - 2048, 43.837 / np.sqrt(images), 0.0003))
     row_noise = Noise.GaussianParams(0, 0.163)
@@ -25,10 +25,12 @@ if __name__ == "__main__":
     rgb2cam = torch.tensor(color_transform[0])
     cam2rgb = torch.tensor(color_transform[1])
     wb = torch.tensor(random_cam_white_balance())
+    upsample = torch.nn.UpsamplingNearest2d(scale_factor=4)
 
     # reading
-    clean = np_to_torch(FileIO.read_image('Test/in0.tif')) ** 2.2 * (2 ** bit_depth) / gain
-    FileIO.write_image_tensor('Test/in.png', np_to_torch(FileIO.read_image('Test/in0.tif')), np.uint16)
+    clean = np_to_torch(FileIO.read_image('Test/in1.tif')) ** 2.2 * (2 ** bit_depth) / gain
+
+    FileIO.write_image_tensor('Test/in.png', upsample(np_to_torch(FileIO.read_image('Test/in1.tif')).unsqueeze(0)).squeeze(0), np.uint16)
     clean = apply_color_matrix(clean, rgb2cam)
     clean = apply_white_balance(clean, 1. / wb)
 
@@ -61,10 +63,10 @@ if __name__ == "__main__":
     noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0, 1)
     noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0, 1)
     noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0, 1)
-    noisy_ahd_jpg = jpg_degrade(noisy_ahd, 50)
-    FileIO.write_image_tensor('Test/blur.png', blurry ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_blur.png', noisy ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_blur_ahd.png', noisy_ahd ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_blur_vng.png', noisy_vng ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_blur_legacy.png', noisy_leg ** 0.4545, np.uint16)
-    FileIO.write_image_tensor('Test/noise_blur_ahd_jpg.png', noisy_ahd_jpg ** 0.4545, np.uint16)
+    noisy_ahd_jpg = jpg_degrade(noisy_ahd, 30)
+    FileIO.write_image_tensor('Test/blur.png', upsample((blurry ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur.png', upsample((noisy ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_ahd.png', upsample((noisy_ahd ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_vng.png', upsample((noisy_vng ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_legacy.png', upsample((noisy_leg ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
+    FileIO.write_image_tensor('Test/noise_blur_ahd_jpg.png', upsample((noisy_ahd_jpg ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)

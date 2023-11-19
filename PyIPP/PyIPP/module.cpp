@@ -62,13 +62,7 @@ PyObject* demosaic_impl(PyObject*, PyObject* args)
   Py_RETURN_NONE;
 }
 
-PyObject* tanh_impl(PyObject*, PyObject* o)
-{
-  return PyFloat_FromDouble(tanh(PyFloat_AsDouble(o)));
-}
-
 static PyMethodDef PyIPP_methods[] = {
-  {"fast_tanh", static_cast<PyCFunction>(tanh_impl), METH_O, nullptr},
   {"Demosaic", static_cast<PyCFunction>(demosaic_impl), METH_VARARGS, nullptr},
   {nullptr, nullptr, 0, nullptr}
 };
