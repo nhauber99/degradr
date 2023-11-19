@@ -5,7 +5,7 @@ from Analysis.Utilities import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
 from ColorTransform import random_color_transform, random_cam_white_balance
 import Noise
-from CFA import BayerPattern, demosaic, DemosaicMethod
+from CFA import BayerPattern, demosaic, DemosaicMethod, create_bayer_matrix
 from ColorConvert import apply_color_matrix, apply_white_balance
 from Convolve import gaussian_kernel, apply_kernel, circular_kernel
 from JpgDegrade import jpg_degrade
@@ -47,6 +47,7 @@ if __name__ == "__main__":
     noisy = torch.round(noisy + pedestal + noise_tensor + row_noise_tensor + col_noise_tensor)  # scale read noise?
     blurry = apply_white_balance(blurry * gain, wb)
     noisy = apply_white_balance(noisy, wb)
+    noisy_bayer = noisy * create_bayer_matrix((noisy.shape[1], noisy.shape[2]), noisy.device)
     noisy_ahd = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.AHD)
     noisy_vng = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.VNG)
     noisy_leg = demosaic(noisy, BayerPattern.GRBG, DemosaicMethod.Legacy)
@@ -60,12 +61,14 @@ if __name__ == "__main__":
     # writing
     blurry = (blurry / (2 ** bit_depth)).clip_(0)
     noisy = (noisy / (2 ** bit_depth)).clip_(0)
+    noisy_bayer = (noisy_bayer / (2 ** bit_depth)).clip_(0)
     noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0, 1)
     noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0, 1)
     noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0, 1)
     noisy_ahd_jpg = jpg_degrade(noisy_ahd, 30)
     FileIO.write_image_tensor('Test/blur.png', upsample((blurry ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
     FileIO.write_image_tensor('Test/noise_blur.png', upsample((noisy ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
+    FileIO.write_image_tensor('Test/noisy_blur_bayer.png', upsample((noisy_bayer ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_ahd.png', upsample((noisy_ahd ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_vng.png', upsample((noisy_vng ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
     FileIO.write_image_tensor('Test/noise_blur_legacy.png', upsample((noisy_leg ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
