@@ -1,4 +1,5 @@
 import random
+from typing import Optional
 
 import numpy as np
 import prysm
@@ -7,7 +8,7 @@ import prysm.propagation
 import prysm.coordinates
 import prysm.geometry
 
-from Analysis.Utilities import Plotter, FileIO
+from Analysis.Utilities import FileIO
 
 
 class Aperture:
@@ -18,7 +19,17 @@ class Aperture:
         self.geometry = prysm.geometry.circle(0.5, self.rho)
 
 
-def gen_zernike_kernel(focal_length, aperture: Aperture, total_weight: float = None, weights=None, wavelengths=None):
+def gen_zernike_kernel(focal_length, aperture: Aperture, total_weight: Optional[float] = None, weights: Optional[np.ndarray] = None,
+                       wavelengths: Optional[np.ndarray] = None) -> np.ndarray:
+    """
+    Generates a psf from zernike polynomials.
+    :param focal_length: focal length of the lens
+    :param aperture: aperture length of the lens
+    :param total_weight: weight to be multiplied by the individual weights of the zernike polynomials
+    :param weights: individual weights of the zernike polynomials
+    :param wavelengths: wavelengths to be sampled
+    :return: a monochrome image of the psf
+    """
     if weights is None:
         weight_std = np.array([0, 0.1, 0.1, 0.5, 0.3, 0.3, 0.7, 0.7, 0.1, 0.1, 0.5, 0.2, 0.2, 0.05, 0.05])
         weights = weight_std * np.random.randn(*weight_std.shape)
@@ -50,9 +61,8 @@ def gen_zernike_kernel(focal_length, aperture: Aperture, total_weight: float = N
 
 if __name__ == "__main__":
     a = Aperture(50 / 2.8)
+    # generate randomly sampled kernels in the specified folder
     for i in range(1000):
         k = gen_zernike_kernel(100, a, random.uniform(1, 2))
         k /= np.max(k)
-        FileIO.write_image(f"Kernels/{i}.tif", k**0.45, np.uint16)
-    # Plotter.image_plot(k)
-    # Plotter.show()
+        FileIO.write_image(f"Kernels/{i}.tif", k ** 0.45, np.uint16)

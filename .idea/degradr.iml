@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/Examples" />
       <excludeFolder url="file://$MODULE_DIR$/PyIPP" />
+      <excludeFolder url="file://$MODULE_DIR$/Kernels" />
     </content>
     <orderEntry type="jdk" jdkName="C:\Users\nh\Anaconda3" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

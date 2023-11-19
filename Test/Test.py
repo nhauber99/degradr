@@ -3,10 +3,9 @@ import torch
 
 from Analysis.Utilities import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
-from ColorTransform import random_color_transform, random_cam_white_balance
+from ColorTransform import random_color_transform, random_cam_white_balance, apply_color_matrix, apply_white_balance
 import Noise
 from CFA import BayerPattern, demosaic, DemosaicMethod, create_bayer_matrix
-from ColorConvert import apply_color_matrix, apply_white_balance
 from Convolve import gaussian_kernel, apply_kernel, circular_kernel
 from JpgDegrade import jpg_degrade
 
