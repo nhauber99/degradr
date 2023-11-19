@@ -1,4 +1,5 @@
-# The values included in this file are derived from the libraw library, as such, this file is also licensed under the following license:
+# The values included in this file are derived from the libraw library, as such, this file is also licensed under the following license.
+# The original file is available here (along with the rest of the LibRaw project): https://github.com/LibRaw/LibRaw/blob/master/src/tables/colordata.cpp
 
 # COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 #
