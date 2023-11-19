@@ -2,6 +2,7 @@
 Python library for realistically degrading images.
 Work in progress, I will add more documentation when having something to show for.
 <br><br>
+The set of matrices for conversions between the camera and sRGB color space was derived from the LibRaw library (https://github.com/LibRaw/LibRaw).
 
 **The applied steps are as follows (assuming the image is already in the camera color space):**
 <ol>
