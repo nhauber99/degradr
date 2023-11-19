@@ -6,20 +6,23 @@ from Analysis.Utilities.TorchUtil import np_to_torch
 from ColorTransform import random_color_transform, random_cam_white_balance, apply_color_matrix, apply_white_balance
 import Noise
 from CFA import BayerPattern, demosaic, DemosaicMethod, create_bayer_matrix
-from Convolve import gaussian_kernel, apply_kernel, circular_kernel
+from Convolve import gaussian_kernel, apply_kernel, circular_kernel, apply_color_kernel
 from JpgDegrade import jpg_degrade
 
 if __name__ == "__main__":
     bit_depth = 14
     pedestal = 0
     images = 1
-    gain = 32
+    gain = 16
     read_noise = (Noise.GaussianParams(2047.98 - 2048, 11.536 / np.sqrt(images), 0.9997),
                   Noise.GaussianParams(2055.5 - 2048, 43.837 / np.sqrt(images), 0.0003))
     row_noise = Noise.GaussianParams(0, 0.163)
     col_noise = Noise.GaussianParams(0, 0.38)
 
-    aberration_kernels = [gaussian_kernel(3, 0.5), circular_kernel(9, 3)]
+    kernel = np_to_torch(FileIO.read_image("Kernels/36.tif")).unsqueeze(0) ** 2.2
+    kernel /= kernel.sum(dim=(2, 3), keepdims=True)
+    aberration_kernels = [kernel]
+    # aberration_kernels = [gaussian_kernel(3, 0.5), circular_kernel(9, 3)]
     color_transform = random_color_transform()
     rgb2cam = torch.tensor(color_transform[0])
     cam2rgb = torch.tensor(color_transform[1])
@@ -36,8 +39,7 @@ if __name__ == "__main__":
     # degradation
     blurry = clean
     for aberration_kernel in aberration_kernels:
-        blurry = apply_kernel(blurry, aberration_kernel)
-
+        blurry = apply_color_kernel(blurry.unsqueeze(0), aberration_kernel).squeeze(0)
     noisy = torch.poisson(blurry) * gain
     noise_tensor = Noise.gaussian_sample_combination_like(noisy, read_noise)
     row_noise_tensor = Noise.row_noise_like(noisy, row_noise)
@@ -64,7 +66,7 @@ if __name__ == "__main__":
     noisy_ahd = (noisy_ahd / (2 ** bit_depth)).clip_(0, 1)
     noisy_vng = (noisy_vng / (2 ** bit_depth)).clip_(0, 1)
     noisy_leg = (noisy_leg / (2 ** bit_depth)).clip_(0, 1)
-    noisy_ahd_jpg = jpg_degrade(noisy_ahd, 30)
+    noisy_ahd_jpg = jpg_degrade(noisy_ahd, 50)
     FileIO.write_image_tensor('Test/blur.png', upsample((blurry ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
     FileIO.write_image_tensor('Test/noise_blur.png', upsample((noisy ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)
     FileIO.write_image_tensor('Test/noisy_blur_bayer.png', upsample((noisy_bayer ** 0.4545).unsqueeze(0)).squeeze(0), np.uint16)

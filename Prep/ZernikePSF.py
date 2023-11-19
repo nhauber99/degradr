@@ -31,7 +31,7 @@ def gen_zernike_kernel(focal_length, aperture: Aperture, total_weight: Optional[
     :return: a monochrome image of the psf
     """
     if weights is None:
-        weight_std = np.array([0, 0.1, 0.1, 0.5, 0.3, 0.3, 0.7, 0.7, 0.1, 0.1, 0.5, 0.2, 0.2, 0.05, 0.05])
+        weight_std = np.array([0, 0.2, 0.0, 0.5, 0.03, 0.3, 0.1, 0.7, 0.02, 0.1, 0.1, 0.01, 0.1, 0.005, 0.02])
         weights = weight_std * np.random.randn(*weight_std.shape)
         weights /= np.sum(np.abs(weights))
     if wavelengths is None:
@@ -63,6 +63,28 @@ if __name__ == "__main__":
     a = Aperture(50 / 2.8)
     # generate randomly sampled kernels in the specified folder
     for i in range(1000):
-        k = gen_zernike_kernel(100, a, random.uniform(1, 2))
+        weight_std = np.array([0, 0.2, 0.0, 0.5, 0.03, 0.3, 0.1, 0.7, 0.02, 0.1, 0.1, 0.01, 0.1, 0.005, 0.02])
+        weights = weight_std * np.random.randn(*weight_std.shape)
+        weights[1] = abs(weights[1])
+        weights[7] = -abs(weights[7])
+        weights /= np.sum(np.abs(weights))
+
+        total_weight = np.sqrt(random.uniform(0, 3))
+        rgb_weight_factor = random.uniform(0.6, 1. / 0.6)
+
+        k = np.zeros((128, 128, 3))
+
+        for j in range(20):
+            wv = 0.4 + 0.3 * j / 20.
+            w = total_weight * pow(rgb_weight_factor, (j - 9.5) / 10)
+            kk = gen_zernike_kernel(100, a, w, weights=weights, wavelengths=np.array((wv,)))
+            if wv < 0.55:
+                k[:, :, 2] = kk
+            if 0.45 < wv < 0.65:
+                k[:, :, 1] = kk
+            if wv > 0.55:
+                k[:, :, 0] = kk
+
+        k /= np.sum(k, axis=(0, 1), keepdims=True)
         k /= np.max(k)
-        FileIO.write_image(f"Kernels/{i}.tif", k ** 0.45, np.uint16)
+        FileIO.write_image(f"ZernikeKernels/{i}.tif", k ** 0.45, np.uint16)
