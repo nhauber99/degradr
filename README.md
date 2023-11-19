@@ -2,6 +2,7 @@
 Python library for realistically degrading images.
 Work in progress, I will add more documentation when having something to show for.
 <br><br>
+The set of matrices for conversions between the camera and sRGB color space was derived from the LibRaw library (https://github.com/LibRaw/LibRaw).
 
 **The applied steps are as follows (assuming the image is already in the camera color space):**
 <ol>
@@ -21,8 +22,8 @@ Work in progress, I will add more documentation when having something to show fo
 **Examples:**
 | Input | ![Image](Examples/in.png) |
 |:-:|-|
-| Blur | ![Image](Examples/blur.png) | 
-| Blur <br> Noise | ![Image](Examples/noise_blur.png) |
-| Blur <br> Noise <br> CFA | ![Image](Examples/noisy_blur_bayer.png) |
-| Blur <br> Noise <br> CFA <br> AHD Demosaicing | ![Image](Examples/noise_blur_ahd.png) |
-| Blur <br> Noise <br> CFA <br> AHD Demosaicing <br> JPEG Compression | ![Image](Examples/noise_blur_ahd_jpg.png) |
+| **Blur** | ![Image](Examples/blur.png) | 
+| Blur <br> **Noise** | ![Image](Examples/noise_blur.png) |
+| Blur <br> Noise <br> **CFA** | ![Image](Examples/noisy_blur_bayer.png) |
+| Blur <br> Noise <br> CFA <br> **AHD Demosaicing** | ![Image](Examples/noise_blur_ahd.png) |
+| Blur <br> Noise <br> CFA <br> AHD Demosaicing <br> **JPEG Compression** | ![Image](Examples/noise_blur_ahd_jpg.png) |
