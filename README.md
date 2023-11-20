@@ -13,7 +13,7 @@ The set of matrices for conversions between the camera and sRGB color space was 
 <li>Read Noise</li>
 <li>Quantization</li>
 <li>Camera white balance</li>
-<li>Demosaicing (3 different methods using the Intel Performance Primitives)</li>
+<li>Demosaicing (3 different methods using the Intel Integrated Performance Primitives)</li>
 <li>Color space transformation (from white balance corrected camera color space to sRGB)</li>
 <li>JPEG Compression</li>
 </ol>
