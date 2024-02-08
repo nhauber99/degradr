@@ -1,6 +1,8 @@
 # degradr
 Python library for realistically degrading images. There is still some work in progress, but at the current state it should already be usable.
 
+A blog post explaining the theory behind it a bit more can be found [here](https://www.photometric.io/blog/realistic-image-degradation/).
+
 For building the Intel Integrated Performance Primitives Python wrapper, which is needed for demosaicing, please download the IPP libraries (or the whole oneAPI Base Toolkit). Then adapt the additional library and include directories of the Visual Studio project to point to the targeted python version and compile as a Release x64 library. Copy the PyIPP.pyd file somewhere into your pythonpath / adapt the pythonpath. 
 When running into trouble, [this guide](https://learn.microsoft.com/en-us/visualstudio/python/working-with-c-cpp-python-in-visual-studio?view=vs-2022) might help which is what I used for creating the wrapper library. If building on Linux, you're unfortunately on your own, but it should absolutely be doable as well.
 
