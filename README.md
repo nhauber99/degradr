@@ -8,7 +8,7 @@ When running into trouble, [this guide](https://learn.microsoft.com/en-us/visual
 
 The set of matrices for conversions between the camera and sRGB color space was derived from the [LibRaw](https://github.com/LibRaw/LibRaw) library and does NOT fall under the license of this project.
 
-A sample usage of the library can be found in the Test.py script, which applies all steps necessary for degrading a "perfect" image.
+A sample usage of the library can be found in the Test.py script, which applies all steps necessary for degrading a "perfect" image. Before that, you'll need to run the ZernikePSF.py and PrepKernels.py script to prepare the convolution kernels.
 The applied steps are as follows (assuming the image is already in the camera color space):
 <ol>
 <li>Convert the input image to the assumed camera color space if needed.</li>
