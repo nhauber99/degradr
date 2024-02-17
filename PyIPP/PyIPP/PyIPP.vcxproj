@@ -72,16 +72,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>.pyd</TargetExt>
-    <LibraryPath>C:\Users\nh\AppData\Local\Programs\Python\Python39\libs;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\nh\AppData\Local\Programs\Python\Python39\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\nh\AppData\Local\Programs\Python\Python310\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\nh\AppData\Local\Programs\Python\Python310\include;$(IncludePath)</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
     <linkage-IPP-static-win-x64>static</linkage-IPP-static-win-x64>
     <threading-IPP-static-win-x64>sequential</threading-IPP-static-win-x64>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.pyd</TargetExt>
-    <LibraryPath>C:\Users\nh\AppData\Local\Programs\Python\Python39\libs;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-    <IncludePath>C:\Users\nh\AppData\Local\Programs\Python\Python39\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\nh\AppData\Local\Programs\Python\Python310\libs;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>C:\Users\nh\AppData\Local\Programs\Python\Python310\include;$(IncludePath)</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
     <linkage-IPP-static-win-x64>static</linkage-IPP-static-win-x64>
     <threading-IPP-static-win-x64>sequential</threading-IPP-static-win-x64>
