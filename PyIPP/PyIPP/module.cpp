@@ -1,7 +1,4 @@
 #include <Python.h>
-#include <Windows.h>
-#include <cmath>
-#include <intrin.h>
 #include <memory>
 
 #include "ipp.h"
@@ -32,16 +29,16 @@ PyObject* demosaic_impl(PyObject*, PyObject* args)
   int ret = -1;
   if (method == 0) {
     auto const temp = std::unique_ptr<uint16_t[]>(new uint16_t[3 * (width + 6) * 30]);
-    ret = ippiDemosaicAHD_16u_C1C3R(inPtrU16.get(), IppiRect{ 0, 0, static_cast<int>(width), static_cast<int>(height) }, IppiSize(static_cast<int>(width), static_cast<int>(height)), static_cast<int>(width * sizeof(uint16_t)),
+    ret = ippiDemosaicAHD_16u_C1C3R(inPtrU16.get(), IppiRect{ 0, 0, static_cast<int>(width), static_cast<int>(height) }, IppiSize{ static_cast<int>(width), static_cast<int>(height) }, static_cast<int>(width * sizeof(uint16_t)),
       outPtrU16.get(), static_cast<int>(3 * width * sizeof(uint16_t)), static_cast<IppiBayerGrid>(bayerType), temp.get(), static_cast<int>(3 * width * sizeof(uint16_t)));
   }
   else if (method == 1) {
     float scale[] = { 1.f, 1.f, 1.f, 1.f };
-    ret = ippiCFAToBGRA_VNG_16u_C1C4R(inPtrU16.get(), IppiRect{ 0, 0, static_cast<int>(width), static_cast<int>(height) }, IppiSize(static_cast<int>(width), static_cast<int>(height)), static_cast<int>(width * sizeof(uint16_t)),
+    ret = ippiCFAToBGRA_VNG_16u_C1C4R(inPtrU16.get(), IppiRect{ 0, 0, static_cast<int>(width), static_cast<int>(height) }, IppiSize{ static_cast<int>(width), static_cast<int>(height) }, static_cast<int>(width * sizeof(uint16_t)),
       scale, outPtrU16.get(), static_cast<int>(4 * width * sizeof(uint16_t)), static_cast<IppiBayerGrid>(bayerType));
   }
   else if (method == 2) {
-    ret = ippiCFAToRGB_16u_C1C3R(inPtrU16.get(), IppiRect{ 0, 0, static_cast<int>(width), static_cast<int>(height) }, IppiSize(static_cast<int>(width), static_cast<int>(height)), static_cast<int>(width * sizeof(uint16_t)),
+    ret = ippiCFAToRGB_16u_C1C3R(inPtrU16.get(), IppiRect{ 0, 0, static_cast<int>(width), static_cast<int>(height) }, IppiSize{ static_cast<int>(width), static_cast<int>(height) }, static_cast<int>(width * sizeof(uint16_t)),
       outPtrU16.get(), static_cast<int>(3 * width * sizeof(uint16_t)), static_cast<IppiBayerGrid>(bayerType), 0);
   }
   if (ret != 0) printf("Demosaic Error %d", ret);
