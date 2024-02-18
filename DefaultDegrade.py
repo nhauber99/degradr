@@ -1,10 +1,20 @@
+import os
+import random
 import typing
+
+import albumentations
+import albumentations.pytorch
 import torch
+
+import CFA
+import Convolve
+import FileIO
 from ColorTransform import random_color_transform, random_cam_white_balance, apply_color_matrix, apply_white_balance
 import Noise
 from CFA import BayerPattern, demosaic, DemosaicMethod, create_bayer_matrix
 from Convolve import gaussian_kernel, apply_kernel, circular_kernel, apply_color_kernel
 from JpgDegrade import jpg_degrade
+from Random import random_bool, random_range
 
 
 def degrade(image, kernels,
@@ -16,7 +26,13 @@ def degrade(image, kernels,
             read_noise: typing.Tuple[Noise.GaussianParams] = (Noise.GaussianParams(2047.98 - 2048, 11.536, 0.9997),
                                                               Noise.GaussianParams(2055.5 - 2048, 43.837, 0.0003)),
             row_noise: Noise.GaussianParams = Noise.GaussianParams(0, 0.163),
-            col_noise: Noise.GaussianParams = Noise.GaussianParams(0, 0.38)):
+            col_noise: Noise.GaussianParams = Noise.GaussianParams(0, 0.38),
+            discard_input: bool = False):
+    """
+        Applies common degradations on an image.
+    """
+    if not discard_input:
+        image = image.clone()
     max_val = image.max()
     image /= max_val
     pedestal = 0
@@ -64,3 +80,30 @@ def degrade(image, kernels,
 
     image *= max_val
     return image
+
+
+def random_degrade(image: torch.Tensor, blur_kernels, jpg_chance: float = 0.5, discard_input: bool = False):
+    kernels = [Convolve.gaussian_kernel(3, 0.75).squeeze(0)]  # anti aliasing filter
+
+    if random_bool(0.9):
+        kernels.append(random.choice(blur_kernels))
+        if random_bool(0.2):
+            kernels.append(Convolve.gaussian_kernel(5, random_range(0.5, 2)).squeeze(0))
+        if random_bool(0.2):
+            kernels.append(Convolve.circular_kernel(7, random_range(1.5, 4)).squeeze(0))
+
+    return degrade(image, kernels,
+                   demosaic_method=CFA.DemosaicMethod(random.randint(-1, 1)),
+                   bayer_pattern=CFA.BayerPattern(random.randint(0, 3)),
+                   gain=0 if random_bool(0.15) else random_range(0.1, 16, 3),
+                   compression_quality=random.randint(50, 99) if random_bool(jpg_chance) else 100,
+                   discard_input=discard_input)
+
+
+def load_kernels(path: str):
+    blur_kernels = []
+    for kernel_path in os.listdir(path):
+        kernel = albumentations.pytorch.ToTensorV2()(image=FileIO.read_image_rgb(os.path.join(path, kernel_path)))["image"] ** 2.2
+        kernel /= kernel.sum(dim=(1, 2), keepdims=True)
+        blur_kernels.append(kernel)
+    return blur_kernels

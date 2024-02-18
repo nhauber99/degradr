@@ -11,7 +11,8 @@ from tqdm import tqdm
 
 import Convolve
 import Noise
-from Analysis.Utilities import FileIO, Plotter
+from Analysis.Utilities import Plotter
+import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
 
 max_count = -1  # set to some number > 0 for faster debugging
@@ -31,7 +32,7 @@ def analyse_read_noise(path: str):
 
     if not os.path.exists(hist_path) or not os.path.exists(mean_image_path) or not os.path.exists(std_image_path):
         for image_name in tqdm(os.listdir(raw_dir), 'calculating mean'):
-            image = FileIO.read_image(os.path.join(raw_dir, image_name), convert_to_float=False)
+            image = FileIO.read_image_rgb(os.path.join(raw_dir, image_name), convert_to_float=False)
             hist, bins = np.histogram(image, bins=2 ** bit_depth, range=(0, 2 ** bit_depth))
             histogram += hist
             if mean_image is None:
@@ -50,7 +51,7 @@ def analyse_read_noise(path: str):
         lowpass_kernel = Convolve.gaussian_kernel(65, 5).cuda()
         std_image = np.zeros_like(mean_image)
         for image_name in tqdm(os.listdir(raw_dir), 'calculating per pixel variance'):
-            image = FileIO.read_image(os.path.join(raw_dir, image_name), convert_to_float=False)
+            image = FileIO.read_image_rgb(os.path.join(raw_dir, image_name), convert_to_float=False)
             image_tensor = np_to_torch(image).cuda()
             image_tensor -= Convolve.apply_kernel(image_tensor.unsqueeze(0), lowpass_kernel).squeeze(0)
             col_std += float(image_tensor.mean(dim=2).std())
@@ -79,8 +80,8 @@ def analyse_read_noise(path: str):
         np.savetxt(hist_path, histogram)
     else:
         histogram = np.loadtxt(hist_path)
-        mean_image = FileIO.read_image(mean_image_path, True) * (2 ** 16)
-        std_image = FileIO.read_image(std_image_path, True) * (2 ** 16)
+        mean_image = FileIO.read_image_rgb(mean_image_path, True) * (2 ** 16)
+        std_image = FileIO.read_image_rgb(std_image_path, True) * (2 ** 16)
 
     mean = (histogram * np.arange(histogram.shape[0])).sum()
     std = np.sqrt((histogram * (np.arange(histogram.shape[0]) - mean) ** 2).sum())

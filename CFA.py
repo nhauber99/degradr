@@ -3,9 +3,9 @@ import typing
 from enum import Enum
 
 import torch
-import os
+#import os
 
-os.add_dll_directory(r"C:\SPRJ\degradr")
+#os.add_dll_directory(r"C:\SPRJ\degradr")
 
 import PyIPP
 

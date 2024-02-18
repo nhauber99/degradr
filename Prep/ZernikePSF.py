@@ -1,3 +1,4 @@
+import os
 import random
 from typing import Optional
 
@@ -8,7 +9,7 @@ import prysm.propagation
 import prysm.coordinates
 import prysm.geometry
 
-from Analysis.Utilities import FileIO
+import FileIO
 
 
 class Aperture:
@@ -59,10 +60,12 @@ def gen_zernike_kernel(focal_length, aperture: Aperture, total_weight: Optional[
     return psf
 
 
-if __name__ == "__main__":
+def gen_zernike_kernels(path: str, n: int):
+    if not os.path.exists(path):
+        os.makedirs(path)
     a = Aperture(50 / 2.8)
     # generate randomly sampled kernels in the specified folder
-    for i in range(1000):
+    for i in range(n):
         weight_std = np.array([0, 0.2, 0.0, 0.5, 0.03, 0.3, 0.1, 0.7, 0.02, 0.1, 0.1, 0.01, 0.1, 0.005, 0.02])
         weights = weight_std * np.random.randn(*weight_std.shape)
         weights[1] = abs(weights[1])
@@ -87,4 +90,8 @@ if __name__ == "__main__":
 
         k /= np.sum(k, axis=(0, 1), keepdims=True)
         k /= np.max(k)
-        FileIO.write_image(f"ZernikeKernels/{i}.tif", k ** 0.45, np.uint16)
+        FileIO.write_image(os.path.join(path, f"{i}.tif"), k ** 0.45, np.uint16)
+
+
+if __name__ == "__main__":
+    gen_zernike_kernels(1000)
