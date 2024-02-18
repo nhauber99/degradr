@@ -4,8 +4,7 @@ import cv2
 import numpy as np
 import torch
 
-
-def read_image(path: str, convert_to_float: bool = True) -> np.array:
+def read_image_rgb(path: str, convert_to_float: bool = True) -> np.array:
     if not os.path.exists(path):
         return None
     image = cv2.imread(path, cv2.IMREAD_UNCHANGED)

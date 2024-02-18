@@ -42,7 +42,7 @@ def apply_kernel(image_tensor: torch.Tensor, kernel: torch.Tensor) -> torch.Tens
 def apply_color_kernel(image_tensor: torch.Tensor, kernel: torch.Tensor) -> torch.Tensor:
     smoothed_list = []
     for i in range(image_tensor.shape[1]):
-        current_kernel = kernel[:, i, None, :, :]
+        current_kernel = kernel[:, 0 if kernel.shape[1] == 1 else i, None, :, :]
         padded = torch.nn.functional.pad(image_tensor[:, i], (
             kernel.shape[2] // 2, kernel.shape[2] // 2, kernel.shape[3] // 2, kernel.shape[3] // 2), mode='replicate')
         smoothed_list.append(torch.nn.functional.conv2d(padded.unsqueeze(0), current_kernel))

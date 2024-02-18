@@ -4,7 +4,7 @@ import random
 import torch.nn
 import torchvision.transforms.functional
 
-from Analysis.Utilities import FileIO
+import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
 import Convolve
 
@@ -22,8 +22,10 @@ def center_kernel(kernel):
 
 
 def prep_kernels(in_path: str, out_path: str):
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
     for kernel_path in os.listdir(in_path):
-        kernel = np_to_torch(FileIO.read_image(os.path.join(in_path, kernel_path))) ** 2.2
+        kernel = np_to_torch(FileIO.read_image_rgb(os.path.join(in_path, kernel_path))) ** 2.2
         kernel = torchvision.transforms.functional.rotate(kernel, random.uniform(0, 360), torchvision.transforms.InterpolationMode.BILINEAR)
         kernel = Convolve.apply_kernel(kernel, Convolve.gaussian_kernel(15, 1.5))
         kernel = (kernel - 2 * kernel.quantile(0.5)).clip_(0)

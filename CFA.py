@@ -3,6 +3,10 @@ import typing
 from enum import Enum
 
 import torch
+#import os
+
+#os.add_dll_directory(r"C:\SPRJ\degradr")
+
 import PyIPP
 
 
@@ -14,6 +18,7 @@ class BayerPattern(Enum):
 
 
 class DemosaicMethod(Enum):
+    No = -1
     AHD = 0  # https://www.intel.com/content/www/us/en/docs/ipp/developer-reference/2021-7/demosaicahd.html
     VNG = 1  # https://www.intel.com/content/www/us/en/docs/ipp/developer-reference/2021-7/cfatobgra.html
     Legacy = 2  # https://www.intel.com/content/www/us/en/docs/ipp/developer-reference/2021-7/cfatorgb.html
@@ -23,6 +28,8 @@ def demosaic(image: torch.Tensor, pattern: BayerPattern = BayerPattern.RGGB, met
     """
     Demosaics an image. The image is assumed to be a normal RGB image without the bayer matrix applied to it.
     """
+    if method == DemosaicMethod.No:
+        return image
     result = torch.zeros_like(image).contiguous()
     temp = bayer_filter(image.contiguous().clip(0, 2 ** 16 - 0.001), pattern)
     PyIPP.Demosaic(

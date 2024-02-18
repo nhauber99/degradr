@@ -1,13 +1,16 @@
 import numpy as np
 import torch
 
-from Analysis.Utilities import FileIO
+import DefaultDegrade
+import FileIO
 from Analysis.Utilities.TorchUtil import np_to_torch
 from ColorTransform import random_color_transform, random_cam_white_balance, apply_color_matrix, apply_white_balance
 import Noise
 from CFA import BayerPattern, demosaic, DemosaicMethod, create_bayer_matrix
-from Convolve import gaussian_kernel, apply_kernel, circular_kernel, apply_color_kernel
+from Convolve import apply_color_kernel
 from JpgDegrade import jpg_degrade
+from Prep.PrepKernels import prep_kernels
+from Prep.ZernikePSF import gen_zernike_kernels
 
 if __name__ == "__main__":
     bit_depth = 14
@@ -19,7 +22,7 @@ if __name__ == "__main__":
     row_noise = Noise.GaussianParams(0, 0.163)
     col_noise = Noise.GaussianParams(0, 0.38)
 
-    kernel = np_to_torch(FileIO.read_image("Kernels/36.tif")).unsqueeze(0) ** 2.2
+    kernel = np_to_torch(FileIO.read_image_rgb("Kernels/4.tif")).unsqueeze(0) ** 2.2
     kernel /= kernel.sum(dim=(2, 3), keepdims=True)
     aberration_kernels = [kernel]
     # aberration_kernels = [gaussian_kernel(3, 0.5), circular_kernel(9, 3)]
@@ -30,9 +33,9 @@ if __name__ == "__main__":
     upsample = torch.nn.UpsamplingNearest2d(scale_factor=4)
 
     # reading
-    clean = np_to_torch(FileIO.read_image('Test/in1.tif')) ** 2.2 * (2 ** bit_depth) / gain
+    clean = np_to_torch(FileIO.read_image_rgb('Test/in.tif')) ** 2.2 * (2 ** bit_depth) / gain
 
-    FileIO.write_image_tensor('Test/in.png', upsample(np_to_torch(FileIO.read_image('Test/in1.tif')).unsqueeze(0)).squeeze(0), np.uint16)
+    FileIO.write_image_tensor('Test/in.png', upsample(np_to_torch(FileIO.read_image_rgb('Test/in.tif')).unsqueeze(0)).squeeze(0), np.uint16)
     clean = apply_color_matrix(clean, rgb2cam)
     clean = apply_white_balance(clean, 1. / wb)
 
