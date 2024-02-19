@@ -5,7 +5,7 @@ A blog post explaining the theory behind it a bit more can be found [here](https
 
 The Demo.py file provides an example usage of the library and should degrade the included test image if you set up everything correctly.
 
-For building the Intel Integrated Performance Primitives Python wrapper, which is needed for demosaicing, please download the IPP libraries (or the whole oneAPI Base Toolkit). Then adapt the additional library and include directories of the Visual Studio project to point to the targeted python version and compile as a Release x64 library. Copy the PyIPP.pyd file somewhere into your pythonpath / adapt the pythonpath. 
+For building the Intel Integrated Performance Primitives Python wrapper, which is needed for demosaicing, please download the IPP libraries (or the whole oneAPI Base Toolkit). Then adapt the additional library and include directories of the Visual Studio project to point to the targeted python version and compile as a Release x64 library. Copy the PyIPP.pyd file somewhere into your pythonpath / adapt the pythonpath (more info in this issue thread: [https://github.com/nhauber99/degradr/issues/2](https://github.com/nhauber99/degradr/issues/2)). 
 When running into trouble, [this guide](https://learn.microsoft.com/en-us/visualstudio/python/working-with-c-cpp-python-in-visual-studio?view=vs-2022) might help which is what I used for creating the wrapper library. If building on Linux, you're unfortunately on your own, but it should absolutely be doable as well.
 
 The set of matrices for conversions between the camera and sRGB color space was derived from the [LibRaw](https://github.com/LibRaw/LibRaw) library and does NOT fall under the license of this project.
