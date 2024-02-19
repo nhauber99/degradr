@@ -23,14 +23,17 @@ def degrade(image, kernels,
             gain: float = 16,
             bit_depth: int = 14,
             compression_quality: int = 50,
-            read_noise: typing.Tuple[Noise.GaussianParams] = (Noise.GaussianParams(2047.98 - 2048, 11.536, 0.9997),
-                                                              Noise.GaussianParams(2055.5 - 2048, 43.837, 0.0003)),
+            read_noise: typing.Tuple[Noise.GaussianParams] = None,
             row_noise: Noise.GaussianParams = Noise.GaussianParams(0, 0.163),
             col_noise: Noise.GaussianParams = Noise.GaussianParams(0, 0.38),
             discard_input: bool = False):
     """
         Applies common degradations on an image.
     """
+    if read_noise is None:
+        read_noise = (Noise.GaussianParams(0, random_range(3, 40, 2), 0.999),
+                      Noise.GaussianParams(0, random_range(30, 80, 2), 0.001))
+
     if not discard_input:
         image = image.clone()
     max_val = image.max()
@@ -87,15 +90,15 @@ def random_degrade(image: torch.Tensor, blur_kernels, jpg_chance: float = 0.5, d
 
     if random_bool(0.9):
         kernels.append(random.choice(blur_kernels))
-        if random_bool(0.2):
-            kernels.append(Convolve.gaussian_kernel(5, random_range(0.5, 2)).squeeze(0))
-        if random_bool(0.2):
-            kernels.append(Convolve.circular_kernel(7, random_range(1.5, 4)).squeeze(0))
+        if random_bool(0.3):
+            kernels.append(Convolve.gaussian_kernel(5, random_range(0.5, 2.5)).squeeze(0))
+        if random_bool(0.3):
+            kernels.append(Convolve.circular_kernel(7, random_range(1.5, 5)).squeeze(0))
 
     return degrade(image, kernels,
-                   demosaic_method=CFA.DemosaicMethod(random.randint(-1, 1)),
+                   demosaic_method=CFA.DemosaicMethod.No if random_bool(0.15) else CFA.DemosaicMethod(random.randint(0, 2)),
                    bayer_pattern=CFA.BayerPattern(random.randint(0, 3)),
-                   gain=0 if random_bool(0.15) else random_range(0.1, 16, 3),
+                   gain=0 if random_bool(0.15) else random_range(0.1, 64, 2),
                    compression_quality=random.randint(50, 99) if random_bool(jpg_chance) else 100,
                    discard_input=discard_input)
 
